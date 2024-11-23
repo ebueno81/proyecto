@@ -1,0 +1,34 @@
+name: Deploy Application
+
+on:
+  push:
+    branches:
+      - main # Ejecuta el flujo de trabajo cuando haya un push en la rama main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17' # Cambia según tu versión de Java
+
+    - name: Build and Run
+      env:
+        DB_URL: ${{ secrets.DB_URL }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      run: |
+        echo "Building the application..."
+        ./mvnw clean install
+        echo "Running the application..."
+        java -Dspring.datasource.url=$DB_URL \
+             -Dspring.datasource.username=$DB_USERNAME \
+             -Dspring.datasource.password=$DB_PASSWORD \
+             -jar target/*.jar
