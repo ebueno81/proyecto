@@ -6,16 +6,16 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Data
 @Entity
 @Table(name="cliente")
+@Data
 @NoArgsConstructor
 public class ClienteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)  // Genera un ID único para JPA
     @Column(name="id_cliente")
-    private Integer id;
+    private Long id;
 
     @Column(name="nombre")
     private String nombre;
