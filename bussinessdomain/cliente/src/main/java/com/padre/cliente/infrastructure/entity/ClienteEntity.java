@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name="cliente")
@@ -30,6 +31,6 @@ public class ClienteEntity {
     private String email;
 
     @Column(name="fecha_registro")
-    private LocalDateTime fecha_registro;
+    private LocalTime fecha_registro;
 
 }

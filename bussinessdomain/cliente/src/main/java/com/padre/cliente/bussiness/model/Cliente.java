@@ -3,6 +3,7 @@ package com.padre.cliente.bussiness.model;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Data
 public class Cliente {
@@ -17,6 +18,6 @@ public class Cliente {
 
     private String email;
 
-    private LocalDateTime fecha_registro;
+    private LocalTime fecha_registro;
 
 }
