@@ -10,25 +10,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out code
-      uses: actions/checkout@v3
+      - name: Check out code
+        uses: actions/checkout@v3
 
-    - name: Set up JDK
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17' # Cambia según tu versión de Java
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17' # Cambia según tu versión de Java
 
-    - name: Build and Run
-      env:
-        DB_URL: ${{ secrets.DB_URL }}
-        DB_USERNAME: ${{ secrets.DB_USERNAME }}
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      run: |
-        echo "Building the application..."
-        ./mvnw clean install
-        echo "Running the application..."
-        java -Dspring.datasource.url=$DB_URL \
-             -Dspring.datasource.username=$DB_USERNAME \
-             -Dspring.datasource.password=$DB_PASSWORD \
-             -jar target/*.jar
+      - name: Build Application
+        run: |
+          echo "Building the application..."
+          cd bussinessdomain/cliente
+          ./mvnw clean install || { echo "Build failed"; exit 1; }
+
+      - name: Deploy Application
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          APP_ID: ${{ secrets.APP_ID }}
+        run: |
+          echo "Deploying the application..."
+          echo "${PRIVATE_KEY}" > private-key.pem
+          chmod 600 private-key.pem
+          scp -r . user@your-server:/path/to/config-server
+          ssh user@your-server << 'EOF'
+            export DB_URL=${{ secrets.DB_URL }}
+            export DB_USERNAME=${{ secrets.DB_USERNAME }}
+            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            export PRIVATE_KEY_PATH=/path/to/config-server/private-key.pem
+            export CLIENT_ID=${{ secrets.CLIENT_ID }}
+            export CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}
+            export APP_ID=${{ secrets.APP_ID }}
+            cd /path/to/config-server
+            java -jar target/*.jar
+          EOF
