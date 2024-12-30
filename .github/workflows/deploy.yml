@@ -19,13 +19,10 @@ jobs:
         distribution: 'temurin'
         java-version: '17' # Cambia según tu versión de Java
 
-    - name: Change Directory to the Project Root
-      run: cd path/to/your/project/root
-
     - name: Build Application
       run: |
         echo "Building the application..."
-        ./mvnw clean install
+        ./mvnw clean install || { echo "Build failed"; exit 1; }
 
     - name: Deploy Application
       env:
