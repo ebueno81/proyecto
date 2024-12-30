@@ -19,16 +19,33 @@ jobs:
         distribution: 'temurin'
         java-version: '17' # Cambia según tu versión de Java
 
-    - name: Build and Run
+    - name: Build Application
+      run: |
+        echo "Building the application..."
+        ./mvnw clean install
+
+    - name: Deploy Application
       env:
         DB_URL: ${{ secrets.DB_URL }}
         DB_USERNAME: ${{ secrets.DB_USERNAME }}
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        GITHUB_PRIVATE_KEY: ${{ secrets.GITHUB_PRIVATE_KEY }}
+        GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID }}
+        GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET }}
+        GITHUB_APP_ID: ${{ secrets.GITHUB_APP_ID }}
       run: |
-        echo "Building the application..."
-        ./mvnw clean install
-        echo "Running the application..."
-        java -Dspring.datasource.url=$DB_URL \
-             -Dspring.datasource.username=$DB_USERNAME \
-             -Dspring.datasource.password=$DB_PASSWORD \
-             -jar target/*.jar
+        echo "Deploying the application..."
+        echo "${GITHUB_PRIVATE_KEY}" > private-key.pem
+        chmod 600 private-key.pem
+        scp -r . user@your-server:/path/to/config-server
+        ssh user@your-server << 'EOF'
+          export DB_URL=${{ secrets.DB_URL }}
+          export DB_USERNAME=${{ secrets.DB_USERNAME }}
+          export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          export GITHUB_PRIVATE_KEY_PATH=/path/to/config-server/private-key.pem
+          export GITHUB_CLIENT_ID=${{ secrets.GITHUB_CLIENT_ID }}
+          export GITHUB_CLIENT_SECRET=${{ secrets.GITHUB_CLIENT_SECRET }}
+          export GITHUB_APP_ID=${{ secrets.GITHUB_APP_ID }}
+          cd /path/to/config-server
+          java -jar target/*.jar
+        EOF
